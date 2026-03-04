@@ -8,20 +8,21 @@ import * as ReactLib from 'react';
 function transformCode(code) {
   return code
     // Remove all import statements (single and multiline)
-    .replace(/import\s+[\s\S]*?from\s+['"][^'"]*['"]\s*;?\n?/gm, '')
-    .replace(/import\s+['"][^'"]*['"]\s*;?\n?/gm, '')
-    // export default function Name → function Name
+    .replace(/^\s*import\s+[\s\S]*?from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    .replace(/^\s*import\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    // Handle default exports first
     .replace(/export\s+default\s+function\s+(\w+)/g, 'function $1')
-    // export default class Name → class Name
     .replace(/export\s+default\s+class\s+(\w+)/g, 'class $1')
-    // export default ( ... ) — arrow fn or expression, keep the expression
-    .replace(/export\s+default\s+/g, '')
-    // export function Name → function Name
+    // Handle named exports
     .replace(/export\s+function\s+(\w+)/g, 'function $1')
-    // export const/let/var
     .replace(/export\s+(const|let|var)\s+/g, '$1 ')
-    // export { ... }
-    .replace(/export\s+\{[^}]*\}\s*;?\n?/gm, '')
+    // Remove re-export forms
+    .replace(/^\s*export\s+\*\s+from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    .replace(/^\s*export\s+\{[\s\S]*?\}\s+from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    .replace(/^\s*export\s+\{[\s\S]*?\}\s*;?\s*$/gm, '')
+    // Finally strip any remaining export prefixes
+    .replace(/^\s*export\s+default\s+/gm, '')
+    .replace(/^\s*export\s+/gm, '')
     .trim();
 }
 
@@ -57,16 +58,34 @@ function buildComponent(files) {
   // Compile JSX → JS
   const compiled = compileJSX(combined);
 
-  // Detect the App component name from the ORIGINAL source before transform
+  // Detect default-exported component name from ORIGINAL source
   let fnName = 'App';
-  const namePatterns = [
+  const defaultExportPatterns = [
     /export\s+default\s+function\s+(\w+)/,
-    /function\s+(App\w*)\s*\(/,
-    /const\s+(App\w*)\s*=/,
+    /export\s+default\s+class\s+(\w+)/,
+    /export\s+default\s+(\w+)\s*;?/,
   ];
-  for (const p of namePatterns) {
+  for (const p of defaultExportPatterns) {
     const m = appCode.match(p);
-    if (m) { fnName = m[1]; break; }
+    if (m) {
+      fnName = m[1];
+      break;
+    }
+  }
+
+  if (fnName === 'App') {
+    const fallbackPatterns = [
+      /function\s+(\w+)\s*\(/,
+      /const\s+(\w+)\s*=/,
+      /class\s+(\w+)\s+/,
+    ];
+    for (const p of fallbackPatterns) {
+      const m = appCode.match(p);
+      if (m) {
+        fnName = m[1];
+        break;
+      }
+    }
   }
 
   const scope = {
@@ -145,7 +164,7 @@ export default function PreviewPanel() {
       console.error('[Preview] Build error:', e);
       setError(e.message);
     }
-  }, [appCode, babelReady]);
+  }, [files, appCode, babelReady, isGenerated]);
 
   const handleRefresh = useCallback(() => {
     if (!babelReady || !isGenerated) return;
