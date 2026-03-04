@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0d0d0d;
+    color: #f0f0f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  #root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #404040;
+  }
+
+  /* Selection */
+  ::selection {
+    background: #7c5cfc44;
+    color: #f0f0f0;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply flex items-center gap-2 px-4 py-2 bg-accent-primary hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-active border border-bg-border text-text-primary text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply flex items-center gap-2 px-3 py-1.5 hover:bg-bg-hover text-text-secondary hover:text-text-primary text-sm rounded-md transition-all duration-150;
+  }
+
+  .panel {
+    @apply bg-bg-panel border border-bg-border;
+  }
+
+  .input-field {
+    @apply w-full bg-bg-tertiary border border-bg-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary/50 focus:ring-1 focus:ring-accent-primary/30 transition-all duration-200;
+  }
+
+  .shimmer-loading {
+    background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+/* Sandpack overrides */
+.sp-wrapper {
+  height: 100% !important;
+}
+
+.sp-layout {
+  height: 100% !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.sp-preview {
+  height: 100% !important;
+}
+
+.sp-preview-container {
+  height: 100% !important;
+}
+
+/* Monaco editor overrides */
+.monaco-editor .margin {
+  background: #111111 !important;
+}
+
+.monaco-editor-background {
+  background: #111111 !important;
+}
