@@ -17,9 +17,12 @@ function transformCode(code) {
     .replace(/export\s+function\s+(\w+)/g, 'function $1')
     .replace(/export\s+(const|let|var)\s+/g, '$1 ')
     // Remove re-export forms
-    .replace(/^\s*export\s+\*\s+from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
-    .replace(/^\s*export\s+\{[\s\S]*?\}\s+from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
-    .replace(/^\s*export\s+\{[\s\S]*?\}\s*;?\s*$/gm, '')
+    .replace(/^\s*export\s+\*\s+from\s+['"][^'"]*['"]\s*;?.*$/gm, '')
+    .replace(/^\s*export\s+\{[\s\S]*?\}\s+from\s+['"][^'"]*['"]\s*;?.*$/gm, '')
+    .replace(/^\s*export\s+\{[\s\S]*?\}\s*;?.*$/gm, '')
+    // Fallback cleanup for split/default export leftovers
+    .replace(/\bexport\s+default\b/g, '')
+    .replace(/^\s*default\s+/gm, '')
     // Finally strip any remaining export prefixes
     .replace(/^\s*export\s+default\s+/gm, '')
     .replace(/^\s*export\s+/gm, '')
