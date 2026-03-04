@@ -57,16 +57,34 @@ function buildComponent(files) {
   // Compile JSX → JS
   const compiled = compileJSX(combined);
 
-  // Detect the App component name from the ORIGINAL source before transform
+  // Detect default-exported component name from ORIGINAL source
   let fnName = 'App';
-  const namePatterns = [
+  const defaultExportPatterns = [
     /export\s+default\s+function\s+(\w+)/,
-    /function\s+(App\w*)\s*\(/,
-    /const\s+(App\w*)\s*=/,
+    /export\s+default\s+class\s+(\w+)/,
+    /export\s+default\s+(\w+)\s*;?/,
   ];
-  for (const p of namePatterns) {
+  for (const p of defaultExportPatterns) {
     const m = appCode.match(p);
-    if (m) { fnName = m[1]; break; }
+    if (m) {
+      fnName = m[1];
+      break;
+    }
+  }
+
+  if (fnName === 'App') {
+    const fallbackPatterns = [
+      /function\s+(\w+)\s*\(/,
+      /const\s+(\w+)\s*=/,
+      /class\s+(\w+)\s+/,
+    ];
+    for (const p of fallbackPatterns) {
+      const m = appCode.match(p);
+      if (m) {
+        fnName = m[1];
+        break;
+      }
+    }
   }
 
   const scope = {
@@ -145,7 +163,7 @@ export default function PreviewPanel() {
       console.error('[Preview] Build error:', e);
       setError(e.message);
     }
-  }, [appCode, babelReady]);
+  }, [files, appCode, babelReady, isGenerated]);
 
   const handleRefresh = useCallback(() => {
     if (!babelReady || !isGenerated) return;
