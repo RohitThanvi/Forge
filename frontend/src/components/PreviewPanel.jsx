@@ -8,20 +8,21 @@ import * as ReactLib from 'react';
 function transformCode(code) {
   return code
     // Remove all import statements (single and multiline)
-    .replace(/import\s+[\s\S]*?from\s+['"][^'"]*['"]\s*;?\n?/gm, '')
-    .replace(/import\s+['"][^'"]*['"]\s*;?\n?/gm, '')
-    // export default function Name → function Name
+    .replace(/^\s*import\s+[\s\S]*?from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    .replace(/^\s*import\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    // Handle default exports first
     .replace(/export\s+default\s+function\s+(\w+)/g, 'function $1')
-    // export default class Name → class Name
     .replace(/export\s+default\s+class\s+(\w+)/g, 'class $1')
-    // export default ( ... ) — arrow fn or expression, keep the expression
-    .replace(/export\s+default\s+/g, '')
-    // export function Name → function Name
+    // Handle named exports
     .replace(/export\s+function\s+(\w+)/g, 'function $1')
-    // export const/let/var
     .replace(/export\s+(const|let|var)\s+/g, '$1 ')
-    // export { ... }
-    .replace(/export\s+\{[^}]*\}\s*;?\n?/gm, '')
+    // Remove re-export forms
+    .replace(/^\s*export\s+\*\s+from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    .replace(/^\s*export\s+\{[\s\S]*?\}\s+from\s+['"][^'"]*['"]\s*;?\s*$/gm, '')
+    .replace(/^\s*export\s+\{[\s\S]*?\}\s*;?\s*$/gm, '')
+    // Finally strip any remaining export prefixes
+    .replace(/^\s*export\s+default\s+/gm, '')
+    .replace(/^\s*export\s+/gm, '')
     .trim();
 }
 
